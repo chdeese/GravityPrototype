@@ -31,13 +31,15 @@ APuzzle::APuzzle()
 	TriggerBounds = CreateDefaultSubobject<UBoxComponent>(TEXT("Trigger"));
 	TriggerBounds->SetupAttachment(StaticMesh);
 	TriggerBounds->SetMobility(EComponentMobility::Stationary);
-	TriggerBounds->SetRelativeScale3D({ 3.f, 3.f, 5.f });
+	TriggerBounds->SetRelativeScale3D({ 2.f, 2.f, 3.f });
 }
 
 // Called when the game starts or when spawned
 void APuzzle::BeginPlay()
 {
 	Super::BeginPlay();
+	
+	//UMaterial meh = StaticMesh->GetMaterial();
 	
 	TriggerBounds->OnComponentBeginOverlap.AddDynamic(this, &APuzzle::OnTriggerOverlap);
 	TriggerBounds->OnComponentEndOverlap.AddDynamic(this, &APuzzle::OnTriggerOverlapEnd);
@@ -53,7 +55,7 @@ void APuzzle::Tick(float DeltaTime)
 void APuzzle::OnTriggerOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (PuzzleType == EPuzzleType::Switch)
-		OnPuzzleActivate();
+		PuzzleActivated();
 	else if (PuzzleType == EPuzzleType::Timer)
 		bCountdownStarted = true; BeginCountdown();
 }
@@ -61,7 +63,7 @@ void APuzzle::OnTriggerOverlap(UPrimitiveComponent* OverlappedComponent, AActor*
 void APuzzle::OnTriggerOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
 	if (PuzzleType == EPuzzleType::Switch)
-		OnPuzzleDeactivate();
+		PuzzleDeactivated();
 	else if (PuzzleType == EPuzzleType::Timer)
 		return;
 }
@@ -71,9 +73,9 @@ void APuzzle::BeginCountdown()
 	if (!bCountdownStarted)
 		return;
 
-	OnPuzzleActivate();
+	PuzzleActivated();
 
-	DELAY(Countdown, { OnPuzzleDeactivate(); });
+	DELAY(Countdown, { PuzzleDeactivated(); });
 }
 
 void APuzzle::PuzzleActivated()
@@ -81,13 +83,19 @@ void APuzzle::PuzzleActivated()
 	if (bIsTriggered)
 		return;
 
+	OnPuzzleActivate.Broadcast();
+
 	bCountdownStarted = false;
 	bIsTriggered = true;
+
+	//StaticMesh->SetMaterial()
+	GEngine->AddOnScreenDebugMessage(0, 5.f, FColor::White, "Activate");
 }
 
 void APuzzle::PuzzleDeactivated()
 {
 	//Unactivate puzzle
 	bIsTriggered = false;
+	GEngine->AddOnScreenDebugMessage(0, 5.f, FColor::White, "UnActivate");
 }
 

@@ -61,17 +61,13 @@ private:
 	UFUNCTION()
 	void BeginCountdown();
 
-	UFUNCTION(BlueprintCallable, Category = "Puzzle")
+public:
+	UFUNCTION()
 	void PuzzleActivated();
 
-	UFUNCTION(BlueprintCallable, Category = "Puzzle")
+	UFUNCTION()
 	void PuzzleDeactivated();
 
-protected:
-	UFUNCTION(BlueprintImplementableEvent)
-	void OnPuzzleActivate();
-	
-	UFUNCTION(BlueprintImplementableEvent)
-	void OnPuzzleDeactivate();
-
+	DECLARE_EVENT(APuzzle, FPuzzleEvent)
+	FPuzzleEvent OnPuzzleActivate;
 };
